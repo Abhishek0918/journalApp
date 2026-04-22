@@ -23,6 +23,11 @@ public class UserController {
         return userService.getAll();
     }
 
+    @GetMapping("/{userName}")
+    public List<User> getUserByUsername(@PathVariable String userName) {
+        return userService.getUserByUsername(userName);
+    }
+
     @PostMapping
     public void createUser(@RequestBody User user){
         userService.saveEntry(user);
@@ -30,14 +35,15 @@ public class UserController {
 
     @PutMapping("/{userName}")
     public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable String userName){
-        User userInDb = userService.findByUserName(user.getUsername());
-        if(userInDb != null){
+        List<User> usersInDb = userService.getUserByUsername(userName);
+        if(usersInDb != null && !usersInDb.isEmpty()){
+            User userInDb = usersInDb.get(0);
             userInDb.setUsername(user.getUsername());
             userInDb.setPassword(user.getPassword());
             userService.saveEntry(userInDb);
+            return new ResponseEntity<>(userInDb, HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
 ;
